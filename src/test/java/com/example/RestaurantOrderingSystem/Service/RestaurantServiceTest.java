@@ -1,6 +1,7 @@
 package com.example.RestaurantOrderingSystem.Service;
 
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
+import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
 import com.example.RestaurantOrderingSystem.Model.ListRestaurantsResponse;
 import com.example.RestaurantOrderingSystem.Repository.RestaurantRepository;
 import org.junit.jupiter.api.Test;
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataRetrievalFailureException;
 
 import java.util.List;
 
@@ -38,13 +40,40 @@ class RestaurantServiceTest {
         assertEquals(expectedRestaurants.getFirst().getMenuItems(), actualRestaurants.getFirst().getMenuItems());
         assertEquals(expectedRestaurants.getFirst().getAddress(), actualRestaurants.getFirst().getAddress());
         verify(restaurantRepository, times(1)).findAll();
+        verify(restaurantRepository, never()).save(any(Restaurant.class));
     }
 
     @Test
     public void testFetchAll_shouldReturnListOfWallets_unknownRepositoryError_throwsRuntimeException() {
-        when(restaurantRepository.findAll()).thenThrow(RuntimeException.class);
+        when(restaurantRepository.findAll()).thenThrow(DataRetrievalFailureException.class);
 
         assertThrows(RuntimeException.class, () -> restaurantService.fetchAll());
+
         verify(restaurantRepository, times(1)).findAll();
+        verify(restaurantRepository, never()).save(any(Restaurant.class));
+    }
+
+    @Test
+    public void testCreate_shouldReturnCreatedRestaurant_success() {
+        when(restaurantRepository.save(restaurant)).thenReturn(restaurant);
+
+        CreateRestaurantResponse actualResponse = restaurantService.create(restaurant);
+
+        Restaurant actualRestaurant = actualResponse.getRestaurant();
+        assertEquals(restaurant.getName(), actualRestaurant.getName());
+        assertEquals(restaurant.getMenuItems(), actualRestaurant.getMenuItems());
+        assertEquals(restaurant.getAddress(), actualRestaurant.getAddress());
+        verify(restaurantRepository, times(1)).save(any(Restaurant.class));
+        verify(restaurantRepository, never()).findAll();
+    }
+
+    @Test
+    public void testCreate_shouldReturnCreatedRestaurant_unknownRepositoryError_throwsRuntimeException() {
+        when(restaurantRepository.save(restaurant)).thenThrow(RuntimeException.class);
+
+        assertThrows(RuntimeException.class, () -> restaurantService.create(restaurant));
+
+        verify(restaurantRepository, times(1)).save(any(Restaurant.class));
+        verify(restaurantRepository, never()).findAll();
     }
 }

@@ -3,6 +3,7 @@ package com.example.RestaurantOrderingSystem.Constants;
 import com.example.RestaurantOrderingSystem.Entity.Address;
 import com.example.RestaurantOrderingSystem.Entity.MenuItem;
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
+import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
 import com.example.RestaurantOrderingSystem.Model.ListRestaurantsResponse;
 
 import java.math.BigDecimal;
@@ -23,4 +24,6 @@ public class Constants {
     public static final Restaurant restaurant = new Restaurant(RESTAURANT_NAME, List.of(menuItem), address);
 
     public static final ListRestaurantsResponse listRestaurantsResponse = new ListRestaurantsResponse(List.of(restaurant), SUCCESS_MESSAGE);
+
+    public static final CreateRestaurantResponse createRestaurantResponse = new CreateRestaurantResponse(restaurant, SUCCESS_MESSAGE);
 }
