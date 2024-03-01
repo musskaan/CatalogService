@@ -20,22 +20,21 @@ public class Constants {
 
     public static final Long INVALID_RESTAURANT_ID = 2L;
 
-    public static final MenuItem menuItem = new MenuItem(ITEM_NAME, BigDecimal.TEN);
-
     public static final Address address = new Address("123 Main Street", "Indore", "MP", "452001");
 
-    public static final Restaurant restaurant = new Restaurant(RESTAURANT_NAME, List.of(menuItem), address);
+    public static final Restaurant restaurant = new Restaurant(RESTAURANT_NAME, address);
+
+    public static final MenuItem menuItem = new MenuItem(ITEM_NAME, BigDecimal.TEN, restaurant);
 
     public static final ListRestaurantsResponse listRestaurantsResponse = new ListRestaurantsResponse(List.of(restaurant), SUCCESS_MESSAGE);
 
     public static final CreateRestaurantResponse createRestaurantResponse = new CreateRestaurantResponse(restaurant, SUCCESS_MESSAGE);
 
-    public static final CreateMenuItemsRequest createMenuItemsRequest = new CreateMenuItemsRequest(List.of(menuItem));
+    public static final MenuItemDTO menuItemDTO = new MenuItemDTO(ITEM_NAME, BigDecimal.TEN);
 
-    public static final MenuItemDTO menuItemDTO = new MenuItemDTO(ITEM_NAME, BigDecimal.TEN, RESTAURANT_NAME);
+    public static final CreateMenuItemsRequest createMenuItemsRequest = new CreateMenuItemsRequest(List.of(menuItemDTO));
 
-    public static final CreateMenuItemsResponse createMenuItemsResponse = CreateMenuItemsResponse.builder()
-            .menuItems(List.of(menuItemDTO))
-            .message(SUCCESS_MESSAGE)
-            .build();
+    public static final CreateMenuItemsResponse createMenuItemsResponse = new CreateMenuItemsResponse(List.of(menuItemDTO), SUCCESS_MESSAGE);
+
+    public static final ListMenuItemsResponse listMenuItemsResponse = new ListMenuItemsResponse(List.of(menuItem), SUCCESS_MESSAGE);
 }

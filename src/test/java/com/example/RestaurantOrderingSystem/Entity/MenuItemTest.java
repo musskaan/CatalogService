@@ -6,31 +6,38 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static com.example.RestaurantOrderingSystem.Constants.Constants.ITEM_NAME;
+import static com.example.RestaurantOrderingSystem.Constants.Constants.restaurant;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MenuItemTest {
 
     @Test
     public void testCreateMenuItemWithEmptyName_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new MenuItem(Strings.EMPTY, BigDecimal.TEN));
+        assertThrows(IllegalArgumentException.class, () -> new MenuItem(Strings.EMPTY, BigDecimal.TEN, restaurant));
     }
 
     @Test
     public void testCreateMenuItemWithNullPrice_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new MenuItem(ITEM_NAME, null));
+        assertThrows(IllegalArgumentException.class, () -> new MenuItem(ITEM_NAME, null, restaurant));
     }
 
     @Test
     public void testCreateMenuItemWithNegativePrice_throwsIllegalArgumentException() {
-        assertThrows(IllegalArgumentException.class, () -> new MenuItem(ITEM_NAME, BigDecimal.valueOf(-10)));
+        assertThrows(IllegalArgumentException.class, () -> new MenuItem(ITEM_NAME, BigDecimal.valueOf(-10), restaurant));
+    }
+
+    @Test
+    public void testCreateMenuItemWithNullRestaurant_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new MenuItem(ITEM_NAME, BigDecimal.TEN, null));
     }
 
     @Test
     public void testCreateValidMenuItem_success() {
-        MenuItem menuItem = new MenuItem(ITEM_NAME, BigDecimal.TEN);
+        MenuItem menuItem = new MenuItem(ITEM_NAME, BigDecimal.TEN, restaurant);
 
         assertNotNull(menuItem);
         assertEquals(ITEM_NAME, menuItem.getName());
         assertEquals(BigDecimal.TEN, menuItem.getPrice());
+        assertEquals(restaurant, menuItem.getRestaurant());
     }
 }

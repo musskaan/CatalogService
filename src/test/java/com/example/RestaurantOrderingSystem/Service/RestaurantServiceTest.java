@@ -12,9 +12,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataRetrievalFailureException;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
+import static com.example.RestaurantOrderingSystem.Constants.Constants.VALID_RESTAURANT_ID;
 import static com.example.RestaurantOrderingSystem.Constants.Constants.restaurant;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,10 +41,10 @@ class RestaurantServiceTest {
         List<Restaurant> actualRestaurants = actualResponse.getRestaurants();
         assertEquals(expectedRestaurants.size(), actualRestaurants.size());
         assertEquals(expectedRestaurants.getFirst().getName(), actualRestaurants.getFirst().getName());
-        assertEquals(expectedRestaurants.getFirst().getMenuItems(), actualRestaurants.getFirst().getMenuItems());
         assertEquals(expectedRestaurants.getFirst().getAddress(), actualRestaurants.getFirst().getAddress());
         verify(restaurantRepository, times(1)).findAll();
         verify(restaurantRepository, never()).save(any(Restaurant.class));
+        verify(restaurantRepository, never()).findById(VALID_RESTAURANT_ID);
     }
 
     @Test
@@ -51,6 +55,7 @@ class RestaurantServiceTest {
 
         verify(restaurantRepository, times(1)).findAll();
         verify(restaurantRepository, never()).save(any(Restaurant.class));
+        verify(restaurantRepository, never()).findById(VALID_RESTAURANT_ID);
     }
 
     @Test
@@ -61,10 +66,10 @@ class RestaurantServiceTest {
 
         Restaurant actualRestaurant = actualResponse.getRestaurant();
         assertEquals(restaurant.getName(), actualRestaurant.getName());
-        assertEquals(restaurant.getMenuItems(), actualRestaurant.getMenuItems());
         assertEquals(restaurant.getAddress(), actualRestaurant.getAddress());
         verify(restaurantRepository, times(1)).save(any(Restaurant.class));
         verify(restaurantRepository, never()).findAll();
+        verify(restaurantRepository, never()).findById(VALID_RESTAURANT_ID);
     }
 
     @Test
@@ -75,5 +80,29 @@ class RestaurantServiceTest {
 
         verify(restaurantRepository, times(1)).save(any(Restaurant.class));
         verify(restaurantRepository, never()).findAll();
+        verify(restaurantRepository, never()).findById(VALID_RESTAURANT_ID);
+    }
+
+    @Test
+    public void testFindById_shouldReturnRestaurant_restaurantNotFound_throwsNoSuchElementException() {
+        when(restaurantRepository.findById(VALID_RESTAURANT_ID)).thenReturn(Optional.empty());
+
+        assertThrows(NoSuchElementException.class, () -> restaurantService.findById(VALID_RESTAURANT_ID));
+
+        verify(restaurantRepository, times(1)).findById(VALID_RESTAURANT_ID);
+        verify(restaurantRepository, never()).findAll();
+        verify(restaurantRepository, never()).save(any(Restaurant.class));
+    }
+
+    @Test
+    public void testFindById_shouldReturnRestaurant_success() {
+        when(restaurantRepository.findById(VALID_RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
+
+        Restaurant actualRestaurant = restaurantService.findById(VALID_RESTAURANT_ID);
+
+        assertEquals(actualRestaurant, restaurant);
+        verify(restaurantRepository, times(1)).findById(VALID_RESTAURANT_ID);
+        verify(restaurantRepository, never()).findAll();
+        verify(restaurantRepository, never()).save(any(Restaurant.class));
     }
 }

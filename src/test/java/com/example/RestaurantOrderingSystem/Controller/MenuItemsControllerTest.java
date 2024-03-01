@@ -1,6 +1,8 @@
 package com.example.RestaurantOrderingSystem.Controller;
 
 import com.example.RestaurantOrderingSystem.Config.SecurityConfig;
+import com.example.RestaurantOrderingSystem.Exception.DuplicateMenuItemNameException;
+import com.example.RestaurantOrderingSystem.Model.CreateMenuItemsRequest;
 import com.example.RestaurantOrderingSystem.Service.MenuItemsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import java.util.NoSuchElementException;
 
 import static com.example.RestaurantOrderingSystem.Constants.Constants.*;
 import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -51,10 +54,10 @@ class MenuItemsControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.menuItems[0].itemName").value(createMenuItemsResponse.getMenuItems().getFirst().getItemName()))
                 .andExpect(jsonPath("$.menuItems[0].price").value(createMenuItemsResponse.getMenuItems().getFirst().getPrice()))
-                .andExpect(jsonPath("$.menuItems[0].restaurantName").value(createMenuItemsResponse.getMenuItems().getFirst().getRestaurantName()))
                 .andExpect(jsonPath("$.message").value(createMenuItemsResponse.getMessage()));
 
         verify(menuItemsService, times(1)).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
+        verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
     }
 
     @Test
@@ -70,6 +73,23 @@ class MenuItemsControllerTest {
                 .andExpect(jsonPath("$.message").value("Restaurant not found with id " + INVALID_RESTAURANT_ID));
 
         verify(menuItemsService, times(1)).create(INVALID_RESTAURANT_ID, createMenuItemsRequest);
+        verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+    }
+
+    @Test
+    @WithMockUser(username = "ADMIN", roles = "ADMIN")
+    public void testCreate_whenAuthorizedUser_restaurantWithSameItemNameAlreadyPresent_returnsConflict() throws Exception {
+        when(menuItemsService.create(VALID_RESTAURANT_ID, createMenuItemsRequest)).thenThrow(new DuplicateMenuItemNameException("Restaurant already have the menu item present"));
+
+        mockMvc.perform(post("/api/v1/restaurants/{restaurantId}/menuItems", VALID_RESTAURANT_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createMenuItemsRequest)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.status").value(409))
+                .andExpect(jsonPath("$.message").value("Restaurant already have the menu item present"));
+
+        verify(menuItemsService, times(1)).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
+        verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
     }
 
     @Test
@@ -85,6 +105,7 @@ class MenuItemsControllerTest {
                 .andExpect(jsonPath("$.message").value("Error retrieving restaurant with id " + VALID_RESTAURANT_ID));
 
         verify(menuItemsService, times(1)).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
+        verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
     }
 
     @Test
@@ -98,5 +119,50 @@ class MenuItemsControllerTest {
                 .andExpect(status().isUnauthorized());
 
         verify(menuItemsService, never()).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
+        verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+    }
+
+    @Test
+    public void testFetchAll_shouldReturnListOfMenuItemsInResponse_returnsIsOk() throws Exception {
+        when(menuItemsService.fetchAll(VALID_RESTAURANT_ID)).thenReturn(listMenuItemsResponse);
+
+        mockMvc.perform(get("/api/v1/restaurants/{restaurantId}/menuItems", VALID_RESTAURANT_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.menuItems[0].name").value(listMenuItemsResponse.getMenuItems().getFirst().getName()))
+                .andExpect(jsonPath("$.menuItems[0].price").value(listMenuItemsResponse.getMenuItems().getFirst().getPrice()))
+                .andExpect(jsonPath("$.message").value(listMenuItemsResponse.getMessage()));
+
+        verify(menuItemsService, times(1)).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+    }
+
+    @Test
+    public void testFetchAll_restaurantNotFound_returnsNotFound() throws Exception {
+        when(menuItemsService.fetchAll(INVALID_RESTAURANT_ID)).thenThrow(new NoSuchElementException("Restaurant not found with id " + INVALID_RESTAURANT_ID));
+
+        mockMvc.perform(get("/api/v1/restaurants/{restaurantId}/menuItems", INVALID_RESTAURANT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Restaurant not found with id " + INVALID_RESTAURANT_ID));
+
+        verify(menuItemsService, times(1)).fetchAll(INVALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+    }
+
+    @Test
+    public void testFetchAll_unknownRepositoryError_returnsInternalServerError() throws Exception {
+        when(menuItemsService.fetchAll(VALID_RESTAURANT_ID)).thenThrow(new DataRetrievalFailureException("Error retrieving menu items for restaurant with id " + VALID_RESTAURANT_ID));
+
+        mockMvc.perform(get("/api/v1/restaurants/{restaurantId}/menuItems", VALID_RESTAURANT_ID)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.message").value("Error retrieving menu items for restaurant with id " + VALID_RESTAURANT_ID));
+
+        verify(menuItemsService, times(1)).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
     }
 }

@@ -1,7 +1,6 @@
 package com.example.RestaurantOrderingSystem.Model;
 
 
-import com.example.RestaurantOrderingSystem.Entity.MenuItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +14,5 @@ import java.util.List;
 public class CreateMenuItemsRequest {
 
     @NonNull
-    List<MenuItem> menuItems;
+    private List<MenuItemDTO> menuItems;
 }

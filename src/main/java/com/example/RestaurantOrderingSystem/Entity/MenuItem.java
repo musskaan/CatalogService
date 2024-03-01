@@ -1,5 +1,6 @@
 package com.example.RestaurantOrderingSystem.Entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,14 +23,20 @@ public class MenuItem {
 
     private BigDecimal price;
 
-    public MenuItem(String name, BigDecimal price) {
-        validate(name, price);
+    @JoinColumn(name="restaurant_id", nullable = false)
+    @ManyToOne
+    @JsonIgnore
+    private Restaurant restaurant;
+
+    public MenuItem(String name, BigDecimal price, Restaurant restaurant) {
+        validate(name, price, restaurant);
         this.name = name;
         this.price = price;
+        this.restaurant = restaurant;
     }
 
-    private void validate(String name, BigDecimal price) {
-        if(name.isEmpty() || price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+    private void validate(String name, BigDecimal price, Restaurant restaurant) {
+        if(name.isEmpty() || price == null || price.compareTo(BigDecimal.ZERO) < 0 || restaurant == null) {
             throw new IllegalArgumentException("Invalid arguments for MenuItem: " + name + " price: " + price);
         }
     }

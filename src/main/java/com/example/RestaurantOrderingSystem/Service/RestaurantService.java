@@ -2,7 +2,6 @@ package com.example.RestaurantOrderingSystem.Service;
 
 import com.example.RestaurantOrderingSystem.Builder.Builder;
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
-import com.example.RestaurantOrderingSystem.Model.CreateMenuItemsRequest;
 import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
 import com.example.RestaurantOrderingSystem.Model.ListRestaurantsResponse;
 import com.example.RestaurantOrderingSystem.Repository.RestaurantRepository;
@@ -37,15 +36,12 @@ public class RestaurantService {
         }
     }
 
-    public Restaurant addMenuItem(Long restaurantId, CreateMenuItemsRequest createMenuItemsRequest) throws Exception {
-        Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(restaurantId);
-
+    public Restaurant findById(Long id) {
+        Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
         if (optionalRestaurant.isEmpty()) {
-            throw new NoSuchElementException("Restaurant not found with id: " + restaurantId);
+            throw new NoSuchElementException("Restaurant not found with id: " + id);
         }
 
-        Restaurant restaurant = optionalRestaurant.get();
-        restaurant.addMenuItems(createMenuItemsRequest.getMenuItems());
-        return restaurantRepository.save(restaurant);
+        return optionalRestaurant.get();
     }
 }

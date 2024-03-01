@@ -1,17 +1,16 @@
 package com.example.RestaurantOrderingSystem.Model;
 
+import com.example.RestaurantOrderingSystem.Entity.MenuItem;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class MenuItemDTO {
-    private String itemName;
-    private BigDecimal price;
+public class ListMenuItemsResponse {
+    private List<MenuItem> menuItems;
+    private String message;
 }

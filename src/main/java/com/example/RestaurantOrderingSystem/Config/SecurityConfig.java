@@ -29,7 +29,7 @@ public class SecurityConfig {
         http.csrf().disable()
                 .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry
-                                .requestMatchers(HttpMethod.GET, "/api/v1/restaurants").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/v1/restaurants/**").permitAll()
                                 .requestMatchers(HttpMethod.POST, "/api/v1/restaurants").authenticated()
                                 .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())

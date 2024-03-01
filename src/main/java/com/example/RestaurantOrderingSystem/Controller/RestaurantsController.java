@@ -24,7 +24,7 @@ public class RestaurantsController {
             ListRestaurantsResponse listRestaurantsResponse = restaurantService.fetchAll();
             return ResponseEntity.status(HttpStatus.OK).body(listRestaurantsResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }
 
@@ -35,7 +35,7 @@ public class RestaurantsController {
             CreateRestaurantResponse createRestaurantResponse = restaurantService.create(restaurant);
             return ResponseEntity.status(HttpStatus.CREATED).body(createRestaurantResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }
     }
 }
