@@ -22,10 +22,6 @@ public class MenuItem {
 
     private BigDecimal price;
 
-    @ManyToOne
-    @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
-
     public MenuItem(String name, BigDecimal price) {
         validate(name, price);
         this.name = name;

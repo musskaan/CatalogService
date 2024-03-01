@@ -21,8 +21,7 @@ import static com.example.RestaurantOrderingSystem.Constants.Constants.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -46,6 +45,12 @@ class RestaurantsControllerTest {
 
         mockMvc.perform(get("/api/v1/restaurants"))
                 .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.restaurants[0].name").value(listRestaurantsResponse.getRestaurants().getFirst().getName()))
+                .andExpect(jsonPath("$.restaurants[0].address.street").value(listRestaurantsResponse.getRestaurants().getFirst().getAddress().getStreet()))
+                .andExpect(jsonPath("$.restaurants[0].address.city").value(listRestaurantsResponse.getRestaurants().getFirst().getAddress().getCity()))
+                .andExpect(jsonPath("$.restaurants[0].address.state").value(listRestaurantsResponse.getRestaurants().getFirst().getAddress().getState()))
+                .andExpect(jsonPath("$.restaurants[0].address.zipCode").value(listRestaurantsResponse.getRestaurants().getFirst().getAddress().getZipCode()))
                 .andExpect(jsonPath("$.message").value(SUCCESS_MESSAGE));
 
         verify(restaurantService, times(1)).fetchAll();
@@ -58,6 +63,7 @@ class RestaurantsControllerTest {
 
         mockMvc.perform(get("/api/v1/restaurants"))
                 .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.message").value("Error querying restaurants from database"));
 
         verify(restaurantService, times(1)).fetchAll();
@@ -73,6 +79,12 @@ class RestaurantsControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(restaurant)))
                 .andExpect(status().isCreated())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.restaurant.name").value(createRestaurantResponse.getRestaurant().getName()))
+                .andExpect(jsonPath("$.restaurant.address.street").value(createRestaurantResponse.getRestaurant().getAddress().getStreet()))
+                .andExpect(jsonPath("$.restaurant.address.city").value(createRestaurantResponse.getRestaurant().getAddress().getCity()))
+                .andExpect(jsonPath("$.restaurant.address.state").value(createRestaurantResponse.getRestaurant().getAddress().getState()))
+                .andExpect(jsonPath("$.restaurant.address.zipCode").value(createRestaurantResponse.getRestaurant().getAddress().getZipCode()))
                 .andExpect(jsonPath("$.message").value(SUCCESS_MESSAGE));
 
         verify(restaurantService, times(1)).create(any(Restaurant.class));
@@ -88,6 +100,7 @@ class RestaurantsControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(restaurant)))
                 .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.message").value("Error saving to database"));
 
         verify(restaurantService, times(1)).create(any(Restaurant.class));

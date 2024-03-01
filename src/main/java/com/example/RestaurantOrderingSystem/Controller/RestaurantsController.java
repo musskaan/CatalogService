@@ -1,6 +1,7 @@
 package com.example.RestaurantOrderingSystem.Controller;
 
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
+import com.example.RestaurantOrderingSystem.Model.ApiErrorResponse;
 import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
 import com.example.RestaurantOrderingSystem.Model.ListRestaurantsResponse;
 import com.example.RestaurantOrderingSystem.Service.RestaurantService;
@@ -18,23 +19,23 @@ public class RestaurantsController {
     private RestaurantService restaurantService;
 
     @GetMapping
-    public ResponseEntity<ListRestaurantsResponse> fetchAll() {
+    public ResponseEntity<?> fetchAll() {
         try {
             ListRestaurantsResponse listRestaurantsResponse = restaurantService.fetchAll();
             return ResponseEntity.status(HttpStatus.OK).body(listRestaurantsResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ListRestaurantsResponse(null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
         }
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CreateRestaurantResponse> create(@RequestBody Restaurant restaurant) {
+    public ResponseEntity<?> create(@RequestBody Restaurant restaurant) {
         try {
             CreateRestaurantResponse createRestaurantResponse = restaurantService.create(restaurant);
             return ResponseEntity.status(HttpStatus.CREATED).body(createRestaurantResponse);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new CreateRestaurantResponse(null, e.getMessage()));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
         }
     }
 }

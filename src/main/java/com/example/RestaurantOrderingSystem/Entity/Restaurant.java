@@ -1,11 +1,11 @@
 package com.example.RestaurantOrderingSystem.Entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -21,9 +21,9 @@ public class Restaurant {
 
     private String name;
 
-    @OneToMany(mappedBy = "restaurant")
-    @JsonIgnore
-    private List<MenuItem> menuItems;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "restaurant_id")
+    private List<MenuItem> menuItems = new ArrayList<>();
 
     private Address address;
 
@@ -38,5 +38,9 @@ public class Restaurant {
         if(name.isEmpty() || menuItems == null || address == null) {
             throw new IllegalArgumentException("Invalid arguments for Restaurant: " + name + " menu items: " + menuItems + " address: " + address);
         }
+    }
+
+    public void addMenuItems(List<MenuItem> menuItems) {
+        this.menuItems.addAll(menuItems);
     }
 }
