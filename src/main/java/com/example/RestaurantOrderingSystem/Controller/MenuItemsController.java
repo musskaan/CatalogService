@@ -1,10 +1,7 @@
 package com.example.RestaurantOrderingSystem.Controller;
 
 import com.example.RestaurantOrderingSystem.Exception.DuplicateMenuItemNameException;
-import com.example.RestaurantOrderingSystem.Model.ApiErrorResponse;
-import com.example.RestaurantOrderingSystem.Model.CreateMenuItemsRequest;
-import com.example.RestaurantOrderingSystem.Model.CreateMenuItemsResponse;
-import com.example.RestaurantOrderingSystem.Model.ListMenuItemsResponse;
+import com.example.RestaurantOrderingSystem.Model.*;
 import com.example.RestaurantOrderingSystem.Service.MenuItemsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,6 +38,18 @@ public class MenuItemsController {
         try {
             ListMenuItemsResponse listMenuItemsResponse = menuItemsService.fetchAll(restaurantId);
             return ResponseEntity.status(HttpStatus.OK).body(listMenuItemsResponse);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @GetMapping("/{menuItemName}")
+    public ResponseEntity<?> fetchByName(@PathVariable(name = "restaurantId") String restaurantId, @PathVariable(name = "menuItemName") String menuItemName) {
+        try {
+            ApiResponse apiResponse = menuItemsService.fetchByName(restaurantId, menuItemName);
+            return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
         } catch (Exception e) {

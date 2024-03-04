@@ -1,5 +1,6 @@
 package com.example.RestaurantOrderingSystem.Entity;
 
+import com.example.RestaurantOrderingSystem.Model.Address;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,8 +17,10 @@ public class Restaurant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private Address address;
 
     public Restaurant(String name, Address address) {

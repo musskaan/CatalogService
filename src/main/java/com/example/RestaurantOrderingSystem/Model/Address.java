@@ -1,4 +1,4 @@
-package com.example.RestaurantOrderingSystem.Entity;
+package com.example.RestaurantOrderingSystem.Model;
 
 import jakarta.persistence.Embeddable;
 import lombok.Builder;

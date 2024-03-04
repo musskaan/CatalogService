@@ -4,7 +4,7 @@ import com.example.RestaurantOrderingSystem.Builder.Builder;
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
 import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
 import com.example.RestaurantOrderingSystem.Model.ListRestaurantsResponse;
-import com.example.RestaurantOrderingSystem.Repository.RestaurantRepository;
+import com.example.RestaurantOrderingSystem.Repository.RestaurantsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +14,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RestaurantService {
+public class RestaurantsService {
 
-    private final RestaurantRepository restaurantRepository;
+    private final RestaurantsRepository restaurantsRepository;
 
     public ListRestaurantsResponse fetchAll() {
         try {
-            List<Restaurant> restaurants = restaurantRepository.findAll();
+            List<Restaurant> restaurants = restaurantsRepository.findAll();
             return Builder.buildListRestaurantsResponse(restaurants);
         } catch (Exception e) {
             throw new RuntimeException("Error querying restaurants from database", e);
@@ -29,7 +29,7 @@ public class RestaurantService {
 
     public CreateRestaurantResponse create(Restaurant restaurant) {
         try {
-            Restaurant createdRestaurant = restaurantRepository.save(restaurant);
+            Restaurant createdRestaurant = restaurantsRepository.save(restaurant);
             return Builder.buildCreateRestaurantResponse(createdRestaurant);
         } catch (Exception e) {
             throw new RuntimeException("Error saving restaurant to database", e);
@@ -37,7 +37,7 @@ public class RestaurantService {
     }
 
     public Restaurant findById(Long id) {
-        Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
+        Optional<Restaurant> optionalRestaurant = restaurantsRepository.findById(id);
         if (optionalRestaurant.isEmpty()) {
             throw new NoSuchElementException("Restaurant not found with id: " + id);
         }

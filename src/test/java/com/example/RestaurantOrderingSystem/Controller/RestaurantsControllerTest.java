@@ -2,7 +2,7 @@ package com.example.RestaurantOrderingSystem.Controller;
 
 import com.example.RestaurantOrderingSystem.Config.SecurityConfig;
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
-import com.example.RestaurantOrderingSystem.Service.RestaurantService;
+import com.example.RestaurantOrderingSystem.Service.RestaurantsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class RestaurantsControllerTest {
 
     @MockBean
-    private RestaurantService restaurantService;
+    private RestaurantsService restaurantsService;
 
     @InjectMocks
     private RestaurantsController restaurantsController;
@@ -41,7 +41,7 @@ class RestaurantsControllerTest {
 
     @Test
     void testFetchAll_shouldReturnListOfRestaurantsInResponse_returnsIsOk() throws Exception {
-        when(restaurantService.fetchAll()).thenReturn(listRestaurantsResponse);
+        when(restaurantsService.fetchAll()).thenReturn(listRestaurantsResponse);
 
         mockMvc.perform(get("/api/v1/restaurants"))
                 .andExpect(status().isOk())
@@ -53,27 +53,27 @@ class RestaurantsControllerTest {
                 .andExpect(jsonPath("$.restaurants[0].address.zipCode").value(listRestaurantsResponse.getRestaurants().getFirst().getAddress().getZipCode()))
                 .andExpect(jsonPath("$.message").value(SUCCESS_MESSAGE));
 
-        verify(restaurantService, times(1)).fetchAll();
-        verify(restaurantService, never()).create(any(Restaurant.class));
+        verify(restaurantsService, times(1)).fetchAll();
+        verify(restaurantsService, never()).create(any(Restaurant.class));
     }
 
     @Test
     void testFetchAll_shouldReturnListOfRestaurantsInResponse_unknownDatabaseError_returnsInternalServerError() throws Exception {
-        when(restaurantService.fetchAll()).thenThrow(new DataRetrievalFailureException("Error querying restaurants from database"));
+        when(restaurantsService.fetchAll()).thenThrow(new DataRetrievalFailureException("Error querying restaurants from database"));
 
         mockMvc.perform(get("/api/v1/restaurants"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.message").value("Error querying restaurants from database"));
 
-        verify(restaurantService, times(1)).fetchAll();
-        verify(restaurantService, never()).create(any(Restaurant.class));
+        verify(restaurantsService, times(1)).fetchAll();
+        verify(restaurantsService, never()).create(any(Restaurant.class));
     }
 
     @Test
     @WithMockUser(username = "ADMIN", roles = "ADMIN")
     void testCreate_whenAuthorizedUser_shouldReturnCreatedRestaurantInResponse_returnsIsCreated() throws Exception {
-        when(restaurantService.create(any(Restaurant.class))).thenReturn(createRestaurantResponse);
+        when(restaurantsService.create(any(Restaurant.class))).thenReturn(createRestaurantResponse);
 
         mockMvc.perform(post("/api/v1/restaurants")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -87,14 +87,14 @@ class RestaurantsControllerTest {
                 .andExpect(jsonPath("$.restaurant.address.zipCode").value(createRestaurantResponse.getRestaurant().getAddress().getZipCode()))
                 .andExpect(jsonPath("$.message").value(SUCCESS_MESSAGE));
 
-        verify(restaurantService, times(1)).create(any(Restaurant.class));
-        verify(restaurantService, never()).fetchAll();
+        verify(restaurantsService, times(1)).create(any(Restaurant.class));
+        verify(restaurantsService, never()).fetchAll();
     }
 
     @Test
     @WithMockUser(username = "ADMIN", roles = "ADMIN")
     void testCreate_whenAuthorizedUser_shouldReturnCreatedRestaurantInResponse_unknownDatabaseError_returnsInternalServerError() throws Exception {
-        when(restaurantService.create(any(Restaurant.class))).thenThrow(new RuntimeException("Error saving to database"));
+        when(restaurantsService.create(any(Restaurant.class))).thenThrow(new RuntimeException("Error saving to database"));
 
         mockMvc.perform(post("/api/v1/restaurants")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -103,8 +103,8 @@ class RestaurantsControllerTest {
                 .andExpect(jsonPath("$.status").value(500))
                 .andExpect(jsonPath("$.message").value("Error saving to database"));
 
-        verify(restaurantService, times(1)).create(any(Restaurant.class));
-        verify(restaurantService, never()).fetchAll();
+        verify(restaurantsService, times(1)).create(any(Restaurant.class));
+        verify(restaurantsService, never()).fetchAll();
     }
 
     @Test
@@ -115,7 +115,7 @@ class RestaurantsControllerTest {
                         .content(objectMapper.writeValueAsString(restaurant)))
                 .andExpect(status().isUnauthorized());
 
-        verify(restaurantService, never()).create(any(Restaurant.class));
-        verify(restaurantService, never()).fetchAll();
+        verify(restaurantsService, never()).create(any(Restaurant.class));
+        verify(restaurantsService, never()).fetchAll();
     }
 }

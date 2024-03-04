@@ -1,7 +1,9 @@
 package com.example.RestaurantOrderingSystem.Controller;
 
+import com.example.RestaurantOrderingSystem.Builder.Builder;
 import com.example.RestaurantOrderingSystem.Config.SecurityConfig;
 import com.example.RestaurantOrderingSystem.Exception.DuplicateMenuItemNameException;
+import com.example.RestaurantOrderingSystem.Model.ApiResponse;
 import com.example.RestaurantOrderingSystem.Model.CreateMenuItemsRequest;
 import com.example.RestaurantOrderingSystem.Service.MenuItemsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,6 +60,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
         verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -74,6 +77,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).create(INVALID_RESTAURANT_ID, createMenuItemsRequest);
         verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -90,6 +94,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
         verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -106,6 +111,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
         verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -120,6 +126,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, never()).create(VALID_RESTAURANT_ID, createMenuItemsRequest);
         verify(menuItemsService, never()).fetchAll(VALID_RESTAURANT_ID);
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -136,6 +143,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).fetchAll(VALID_RESTAURANT_ID);
         verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -150,6 +158,7 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).fetchAll(INVALID_RESTAURANT_ID);
         verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
     }
 
     @Test
@@ -164,5 +173,55 @@ class MenuItemsControllerTest {
 
         verify(menuItemsService, times(1)).fetchAll(VALID_RESTAURANT_ID);
         verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+        verify(menuItemsService, never()).fetchByName(anyString(), anyString());
+    }
+
+    @Test
+    public void testFetchByName_shouldReturnMenuItem_returnsIsOk() throws Exception {
+        ApiResponse apiResponse = Builder.buildApiResponse(menuItem);
+        when(menuItemsService.fetchByName(String.valueOf(VALID_RESTAURANT_ID), MENU_ITEM_NAME)).thenReturn(apiResponse);
+
+        mockMvc.perform(get("/api/v1/restaurants/{restaurantId}/menuItems/{menuItemName}", VALID_RESTAURANT_ID, MENU_ITEM_NAME)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.message").value(apiResponse.getMessage()))
+                .andExpect(jsonPath("$.status").value(OK))
+                .andExpect(jsonPath("$.data.menu_item.name").value(menuItem.getName()))
+                .andExpect(jsonPath("$.data.menu_item.price").value(menuItem.getPrice()));
+
+        verify(menuItemsService, times(1)).fetchByName(String.valueOf(VALID_RESTAURANT_ID), MENU_ITEM_NAME);
+        verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+        verify(menuItemsService, never()).fetchAll(anyLong());
+    }
+
+    @Test
+    public void testFetchByName_menuItemNotFoundForARestaurant_returnsNotFound() throws Exception {
+        when(menuItemsService.fetchByName(String.valueOf(INVALID_RESTAURANT_ID), MENU_ITEM_NAME)).thenThrow(new NoSuchElementException("Menu item not found for restaurant with id " + INVALID_RESTAURANT_ID));
+
+        mockMvc.perform(get("/api/v1/restaurants/{restaurantId}/menuItems/{menuItemName}", INVALID_RESTAURANT_ID, MENU_ITEM_NAME)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Menu item not found for restaurant with id " + INVALID_RESTAURANT_ID));
+
+        verify(menuItemsService, times(1)).fetchByName(String.valueOf(INVALID_RESTAURANT_ID), MENU_ITEM_NAME);
+        verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+        verify(menuItemsService, never()).fetchAll(anyLong());
+    }
+
+    @Test
+    public void testFetchByName_unknownRepositoryError_returnsInternalServerError() throws Exception {
+        when(menuItemsService.fetchByName(String.valueOf(VALID_RESTAURANT_ID), MENU_ITEM_NAME)).thenThrow(new DataRetrievalFailureException("Error retrieving menu item for restaurant with id " + VALID_RESTAURANT_ID));
+
+        mockMvc.perform(get("/api/v1/restaurants/{restaurantId}/menuItems/{menuItemName}", VALID_RESTAURANT_ID, MENU_ITEM_NAME)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.message").value("Error retrieving menu item for restaurant with id " + VALID_RESTAURANT_ID));
+
+        verify(menuItemsService, times(1)).fetchByName(String.valueOf(VALID_RESTAURANT_ID), MENU_ITEM_NAME);
+        verify(menuItemsService, never()).create(anyLong(), any(CreateMenuItemsRequest.class));
+        verify(menuItemsService, never()).fetchAll(anyLong());
     }
 }

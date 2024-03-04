@@ -19,8 +19,10 @@ public class MenuItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
+    @Column(nullable = false)
     private BigDecimal price;
 
     @JoinColumn(name="restaurant_id", nullable = false)
