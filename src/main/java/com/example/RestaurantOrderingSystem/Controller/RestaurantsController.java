@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/api/v1/restaurants")
 public class RestaurantsController {
@@ -34,6 +36,18 @@ public class RestaurantsController {
         try {
             CreateRestaurantResponse createRestaurantResponse = restaurantsService.create(restaurant);
             return ResponseEntity.status(HttpStatus.CREATED).body(createRestaurantResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> fetchById(@PathVariable String id) {
+        try {
+            Restaurant restaurant = restaurantsService.findById(Long.valueOf(id));
+            return ResponseEntity.status(HttpStatus.OK).body(restaurant);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value()));
         }

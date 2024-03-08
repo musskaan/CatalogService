@@ -17,6 +17,8 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.NoSuchElementException;
+
 import static com.example.RestaurantOrderingSystem.Constants.Constants.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -55,6 +57,7 @@ class RestaurantsControllerTest {
 
         verify(restaurantsService, times(1)).fetchAll();
         verify(restaurantsService, never()).create(any(Restaurant.class));
+        verify(restaurantsService, never()).findById(anyLong());
     }
 
     @Test
@@ -68,6 +71,7 @@ class RestaurantsControllerTest {
 
         verify(restaurantsService, times(1)).fetchAll();
         verify(restaurantsService, never()).create(any(Restaurant.class));
+        verify(restaurantsService, never()).findById(anyLong());
     }
 
     @Test
@@ -89,6 +93,7 @@ class RestaurantsControllerTest {
 
         verify(restaurantsService, times(1)).create(any(Restaurant.class));
         verify(restaurantsService, never()).fetchAll();
+        verify(restaurantsService, never()).findById(anyLong());
     }
 
     @Test
@@ -105,6 +110,7 @@ class RestaurantsControllerTest {
 
         verify(restaurantsService, times(1)).create(any(Restaurant.class));
         verify(restaurantsService, never()).fetchAll();
+        verify(restaurantsService, never()).findById(anyLong());
     }
 
     @Test
@@ -117,5 +123,47 @@ class RestaurantsControllerTest {
 
         verify(restaurantsService, never()).create(any(Restaurant.class));
         verify(restaurantsService, never()).fetchAll();
+        verify(restaurantsService, never()).findById(anyLong());
+    }
+
+    @Test
+    void testFetchById_shouldReturnRestaurant_returnsIsOk() throws Exception {
+        when(restaurantsService.findById(VALID_RESTAURANT_ID)).thenReturn(restaurant);
+
+        mockMvc.perform(get("/api/v1/restaurants/{id}", VALID_RESTAURANT_ID.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().json(objectMapper.writeValueAsString(restaurant)));
+
+        verify(restaurantsService, times(1)).findById(VALID_RESTAURANT_ID);
+        verify(restaurantsService, never()).fetchAll();
+        verify(restaurantsService, never()).create(any(Restaurant.class));
+    }
+
+    @Test
+    void testFetchById_noRestaurantFoundWithGivenId_returnsNotFound() throws Exception {
+        when(restaurantsService.findById(VALID_RESTAURANT_ID)).thenThrow(new NoSuchElementException("Restaurant not found with id: " + VALID_RESTAURANT_ID));
+
+        mockMvc.perform(get("/api/v1/restaurants/{id}", VALID_RESTAURANT_ID.toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.message").value("Restaurant not found with id: " + VALID_RESTAURANT_ID));
+
+        verify(restaurantsService, times(1)).findById(VALID_RESTAURANT_ID);
+        verify(restaurantsService, never()).fetchAll();
+        verify(restaurantsService, never()).create(any(Restaurant.class));
+    }
+
+    @Test
+    void testFetchById_unexpectedDatabaseError_returnsInternalServerError() throws Exception {
+        when(restaurantsService.findById(VALID_RESTAURANT_ID)).thenThrow(new DataRetrievalFailureException("Error fetching restaurant with id: " + VALID_RESTAURANT_ID));
+
+        mockMvc.perform(get("/api/v1/restaurants/{id}", VALID_RESTAURANT_ID.toString()))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.message").value("Error fetching restaurant with id: " + VALID_RESTAURANT_ID));
+
+        verify(restaurantsService, times(1)).findById(VALID_RESTAURANT_ID);
+        verify(restaurantsService, never()).fetchAll();
+        verify(restaurantsService, never()).create(any(Restaurant.class));
     }
 }
