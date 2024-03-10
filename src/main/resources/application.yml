@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/RestaurantOrderingSystem
+    url: jdbc:postgresql://localhost:5433/CatalogServiceDB
     username: postgres
     password: pgpswd
     driverClassName: org.postgresql.Driver

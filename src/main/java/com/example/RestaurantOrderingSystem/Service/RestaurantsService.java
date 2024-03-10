@@ -6,10 +6,8 @@ import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
 import com.example.RestaurantOrderingSystem.Model.ListRestaurantsResponse;
 import com.example.RestaurantOrderingSystem.Repository.RestaurantsRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.stereotype.Service;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;

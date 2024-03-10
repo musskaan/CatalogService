@@ -1,5 +1,6 @@
 package com.example.RestaurantOrderingSystem.Controller;
 
+import com.example.RestaurantOrderingSystem.Builder.Builder;
 import com.example.RestaurantOrderingSystem.Entity.Restaurant;
 import com.example.RestaurantOrderingSystem.Model.ApiErrorResponse;
 import com.example.RestaurantOrderingSystem.Model.CreateRestaurantResponse;
@@ -45,7 +46,7 @@ public class RestaurantsController {
     public ResponseEntity<?> fetchById(@PathVariable String id) {
         try {
             Restaurant restaurant = restaurantsService.findById(Long.valueOf(id));
-            return ResponseEntity.status(HttpStatus.OK).body(restaurant);
+            return ResponseEntity.status(HttpStatus.OK).body(Builder.buildApiResponse(restaurant));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiErrorResponse(e.getMessage(), HttpStatus.NOT_FOUND.value()));
         } catch (Exception e) {

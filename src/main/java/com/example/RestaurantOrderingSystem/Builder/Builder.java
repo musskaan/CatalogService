@@ -16,6 +16,7 @@ public class Builder {
     private static final String RETRIEVED_ALL_MENU_ITEMS_SUCCESSFULLY = "Retrieved all menu items for restaurant ";
     private static final String FETCHED = "Fetched";
     private static final String MENU_ITEM = "menu_item";
+    private static final String RESTAURANT = "restaurant";
 
 
     public static ListRestaurantsResponse buildListRestaurantsResponse(List<Restaurant> restaurants) {
@@ -39,6 +40,14 @@ public class Builder {
                 .message(FETCHED)
                 .status(HttpStatus.OK)
                 .data(Map.of(MENU_ITEM, new MenuItemResponse(menuItem)))
+                .build();
+    }
+
+    public static ApiResponse buildApiResponse(Restaurant restaurant) {
+        return ApiResponse.builder()
+                .message(FETCHED)
+                .status(HttpStatus.OK)
+                .data(Map.of(RESTAURANT, new Restaurant(restaurant.getId(), restaurant.getName(), restaurant.getAddress())))
                 .build();
     }
 }
